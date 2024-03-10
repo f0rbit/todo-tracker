@@ -1,9 +1,9 @@
 import { readdir } from "node:fs/promises";
+import config from "./config";
 
 console.log("Starting main script");
 
 const DIR = `../resources/codebase`;
-const config = [{ name: "todo", match: ["@todo", "TODO"] }];
 
 console.log(`Reading files from directory: ${DIR}`);
 const files = await readdir(DIR, { recursive: true });
