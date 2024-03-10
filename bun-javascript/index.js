@@ -1,40 +1,51 @@
 import { readdir } from "node:fs/promises";
-import { EOL } from "node:os";
 
-const DIR = `../resources/codebase`
+console.log("Starting main script");
 
-// read all the files in the current directory, recursively
-const files = await readdir(DIR, { recursive: true });
-
-/** @type {import("bun").BunFile[]} */
-const search = [];
-
-for (const f of files) {
-    const path = `${DIR}/${f}`;
-    const bun_file = Bun.file(path);
-
-    const is_dir = bun_file.type.includes("octet-stream");
-    if (!is_dir) search.push(bun_file);
-}
-
+const DIR = `../resources/codebase`;
 const config = [{ name: "todo", match: ["@todo", "TODO"] }];
 
-const found_lines = [];
+console.log(`Reading files from directory: ${DIR}`);
+const files = await readdir(DIR, { recursive: true });
+console.log(`Total files read: ${files.length}`);
 
-for (const f of search) {
-    const lines = (await f.text()).split("\n");
-    lines.forEach((l, i) => {
-        config.forEach((c) => {
-            c.match.forEach((m) => {
-                if (l.includes(m)) {
-                    const file_name = f.name.substring(DIR.length + 1);
-                    found_lines.push({ file: file_name, line: i, tag: c.name, text: l, context: lines.slice(i - 3, i + 3).join(EOL) });
-                }
-            });
-        });
+// Split files array into chunks for each worker
+const numWorkers = 4; // Or any number you find appropriate
+const chunkSize = Math.ceil(files.length / numWorkers);
+console.log(`Number of workers: ${numWorkers}, Chunk size: ${chunkSize}`);
+
+const filesChunks = Array.from({ length: numWorkers }, (_, i) =>
+  files.slice(i * chunkSize, (i + 1) * chunkSize)
+);
+
+const workers = [];
+const promises = [];
+
+for (const chunk of filesChunks) {
+    console.log(`Sending chunk to worker, chunk size: ${chunk.length}`);
+    const worker = new Worker(new URL('./worker.js', import.meta.url));
+    workers.push(worker);
+    const promise = new Promise((resolve) => {
+        worker.onmessage = (message) => {
+            console.log("Message received from worker");
+            resolve(message.data);
+        };
+        worker.onerror = (error) => {
+            console.log(`Worker error: ${error.message}`);
+        };
     });
+    promises.push(promise);
+    worker.postMessage({ filesChunk: chunk, config });
+    console.log("Post message sent to worker");
 }
 
+// Wait for all workers to complete
+console.log("Waiting for all workers to complete");
+const results = (await Promise.all(promises)).flat();
+console.log("All workers have completed");
 
-console.log(found_lines);
+// Clean up
+console.log("Terminating all workers");
+workers.forEach(worker => worker.terminate());
 
+console.log("Results:", results);
