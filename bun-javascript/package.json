@@ -7,5 +7,9 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "scripts": {
+      "parse": "bun src/parser.js --dir \"../resources/codebase\" --config \"../config.json\"",
+      "parse-new": "bun src/parser.js --dir \"../resources/codebase-changed\" --config \"../config.json\""
   }
 }
