@@ -1,9 +1,8 @@
 // load config from file
-const DIR = `../resources`;
-const FILENAME = `config.json`;
+import args from "./args";
 
 // read using bun file
-const file = Bun.file(`${DIR}/${FILENAME}`);
+const file = Bun.file(`${args.dir}/${args.config}`);
 const config = await file.json();
 
 // export

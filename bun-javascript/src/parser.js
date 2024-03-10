@@ -1,6 +1,9 @@
 import { readdir } from "node:fs/promises";
 import config from "./config";
-const DIR = `../resources/codebase`;
+import args from "./args";
+
+const DIR = `${args.dir}`;
+
 const files = await readdir(DIR, { recursive: true });
 
 // Split files array into chunks for each worker
@@ -15,7 +18,7 @@ const workers = [];
 const promises = [];
 
 for (const chunk of chunks) {
-    const worker = new Worker(new URL('./worker.js', import.meta.url));
+    const worker = new Worker(new URL('./file_worker.js', import.meta.url));
     workers.push(worker);
     const promise = new Promise((resolve) => {
         worker.onmessage = (message) => {
@@ -26,7 +29,7 @@ for (const chunk of chunks) {
         };
     });
     promises.push(promise);
-    worker.postMessage({ chunk, config });
+    worker.postMessage({ chunk, config, directory: DIR });
 }
 
 // Wait for all workers to complete
