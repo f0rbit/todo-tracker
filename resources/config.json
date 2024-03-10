@@ -1,0 +1,5 @@
+[
+    { "name": "todo", "match": [ "@todo", "TODO:" ] },
+    { "name": "bug",  "match": [ "@bug",  "BUG:"  ] },
+    { "name": "note", "match": [ "@note", "NOTE:" ] }
+]
