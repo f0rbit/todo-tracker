@@ -25,28 +25,41 @@ function isTaskUpdated(task, otherTask) {
 const baseTasks = readJsonFile('./output-base.json');
 const newTasks = readJsonFile('./output-new.json');
 
+/** @typedef {{ tag: string, type: "NEW" | "UPDATE" | "MOVE" | "DELETE", data: { old: { text: string, line: number, file: string }, new: { text: string, line: number, file: string } }}} DiffResult */
+
+/** @type {DiffResult[]} */
 const diffs = [];
 
-// Track moved and updated tasks
-newTasks.forEach(newTask => {
-    const baseTask = baseTasks.find(bt => areTasksEquivalent(bt, newTask));
-    if (baseTask) {
-        if (isTaskMoved(newTask, baseTask)) {
-            diffs.push({ ...newTask, type: 'MOVED' });
-        } else if (isTaskUpdated(newTask, baseTask)) {
-            diffs.push({ ...newTask, type: 'UPDATED' });
-        }
-    } else {
-        diffs.push({ ...newTask, type: 'NEW' }); // Task does not exist in baseTasks
+const extract_task = (task) => {
+    const { text, line, file } = task;
+    return { text, line, file };
+}
+
+
+// process the tasks
+newTasks.forEach(new_task => {
+    const base_task = baseTasks.find(bt => areTasksEquivalent(bt, new_task));
+    const _old = base_task ? extract_task(base_task) : null;
+    const _new = extract_task(new_task);
+    const data = { old: _old, new: _new };
+
+    if (!base_task) {
+        diffs.push({ tag: new_task.tag, type: 'NEW', data });
+        return;
+    }
+
+    if (isTaskMoved(new_task, base_task)) {
+        diffs.push({ tag: new_task.tag, type: 'MOVE', data });
+    } else if (isTaskUpdated(new_task, base_task)) {
+        diffs.push({ tag: new_task.tag, type: 'UPDATE', data });
     }
 });
 
-// Track deleted tasks
-baseTasks.forEach(baseTask => {
-    const newTask = newTasks.find(nt => areTasksEquivalent(nt, baseTask));
-    if (!newTask) {
-        diffs.push({ ...baseTask, type: 'DELETE' }); // Task does not exist in newTasks
-    }
+baseTasks.forEach(base_task => {
+    const new_task = newTasks.find(nt => areTasksEquivalent(nt, base_task));
+    if (new_task) return;
+    const data = { old: extract_task(base_task), new: null };
+    diffs.push({ tag: base_task.tag, type: 'DELETE', data });
 });
 
 console.log(JSON.stringify(diffs, null, 2));
