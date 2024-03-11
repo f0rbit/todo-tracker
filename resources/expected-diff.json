@@ -1,0 +1,104 @@
+[
+  {
+    "id": "1b62e788-8eb7-43d9-9bd6-7e3ad578515a",
+    "tag": "note",
+    "type": "UPDATE",
+    "data": {
+      "old": {
+        "text": "// NOTE: this is a test function",
+        "line": 0,
+        "file": "index.ts"
+      },
+      "new": {
+        "text": "// NOTE: this function is just for testing",
+        "line": 0,
+        "file": "index.ts"
+      }
+    }
+  },
+  {
+    "id": "5ecf8350-4d23-407c-8874-f967f5f0a7b9",
+    "tag": "todo",
+    "type": "MOVE",
+    "data": {
+      "old": {
+        "text": "        /** @todo make this a different function */",
+        "line": 5,
+        "file": "index.ts"
+      },
+      "new": {
+        "text": "    /** @todo make this a different function */",
+        "line": 4,
+        "file": "index.ts"
+      }
+    }
+  },
+  {
+    "id": "fb6020e5-6c03-4194-9620-1d0c9802f3ab",
+    "tag": "bug",
+    "type": "SAME",
+    "data": {
+      "old": {
+        "text": "    // BUG: not awaited",
+        "line": 9,
+        "file": "index.ts"
+      },
+      "new": {
+        "text": "    // BUG: not awaited",
+        "line": 9,
+        "file": "index.ts"
+      }
+    }
+  },
+  {
+    "id": "402ef235-f4fe-4f2b-8d7e-d223c16f52ec",
+    "tag": "todo",
+    "type": "SAME",
+    "data": {
+      "old": {
+        "text": "    // TODO: make this awaited",
+        "line": 10,
+        "file": "index.ts"
+      },
+      "new": {
+        "text": "    // TODO: make this awaited",
+        "line": 10,
+        "file": "index.ts"
+      }
+    }
+  },
+  {
+    "id": "91dd1b37-89b8-4c11-bb26-0005dd2d7225",
+    "tag": "note",
+    "type": "MOVE",
+    "data": {
+      "old": {
+        "text": "// NOTE: this file is empty.",
+        "line": 0,
+        "file": "sub-dir/test-2.ts"
+      },
+      "new": {
+        "text": "// NOTE: this file is empty.",
+        "line": 0,
+        "file": "sub-dir/test-1.ts"
+      }
+    }
+  },
+  {
+    "id": "98affce1-717b-489d-a6b7-c8b0222ee8cb",
+    "tag": "todo",
+    "type": "SAME",
+    "data": {
+      "old": {
+        "text": " * @todo we need to import the `test` and `excect` functions",
+        "line": 8,
+        "file": "sub-dir/test-1.ts"
+      },
+      "new": {
+        "text": " * @todo we need to import the `test` and `excect` functions",
+        "line": 8,
+        "file": "sub-dir/test-1.ts"
+      }
+    }
+  }
+]
