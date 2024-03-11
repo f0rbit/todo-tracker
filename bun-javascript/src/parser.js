@@ -4,7 +4,13 @@ import args from "./args";
 
 const DIR = `${args.dir}`;
 
-const files = await readdir(DIR, { recursive: true });
+const crawl_files = await readdir(DIR, { recursive: true });
+
+const ignore_regexes = config.ignore.map((i) => new RegExp(i));
+
+const files = crawl_files.filter((f) => {
+    return !(ignore_regexes.some((r) => r.test(f)));
+});
 
 // Split files array into chunks for each worker
 const num_workers = 4; // Or any number you find appropriate
@@ -29,7 +35,7 @@ for (const chunk of chunks) {
         };
     });
     promises.push(promise);
-    worker.postMessage({ chunk, config, directory: DIR });
+    worker.postMessage({ chunk, config: config.tags, directory: DIR });
 }
 
 // Wait for all workers to complete
