@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { EOL } from "node:os";
 
 self.onmessage = async (message) => {
@@ -15,8 +16,10 @@ self.onmessage = async (message) => {
                 config.forEach((c) => {
                     c.match.forEach((m) => {
                         if (l.includes(m)) {
+                            const uuid = randomUUID();
+
                             const file_name = bun_file.name.substring(directory.length + 1);
-                            found_lines.push({ file: file_name, line: i, tag: c.name, text: l, context: lines.slice(i - 3, i + 3).join(EOL) });
+                            found_lines.push({ id: uuid, file: file_name, line: i, tag: c.name, text: l, context: lines.slice(i - 3, i + 3).join(EOL) });
                         }
                     });
                 });
