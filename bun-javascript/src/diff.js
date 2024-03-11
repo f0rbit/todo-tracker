@@ -8,7 +8,7 @@ function readJsonFile(filePath) {
 
 // Determine if two tasks are equivalent
 function areTasksEquivalent(task1, task2) {
-    return task1.text.trim() === task2.text.trim() && task1.tag === task2.tag;
+    return (task1.line === task2.line || task1.text.trim() === task2.text.trim()) && task1.tag === task2.tag;
 }
 
 // Determine if a task has been moved
