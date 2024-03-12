@@ -41,9 +41,8 @@ func parse_args() {
 		fmt.Printf("Error loading config: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("Parsed configuration: %+v\n", config)
 
-	fmt.Printf("Directory: %s\n", directory)
+    parse_dir(directory, config)
 }
 
 func diff_args() {
