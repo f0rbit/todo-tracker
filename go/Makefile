@@ -5,6 +5,7 @@ all: clean build parse
 
 clean:
 	rm -f ${OUTPUT_NAME}
+	rm -rf output*.json
 
 build:
 	go build -o ${OUTPUT_NAME}
@@ -19,3 +20,6 @@ diff: build
 	@./${OUTPUT_NAME} parse ${RESOURCES_DIR}/codebase ${RESOURCES_DIR}/config.json > output-base.json
 	@./${OUTPUT_NAME} parse ${RESOURCES_DIR}/codebase-changed ${RESOURCES_DIR}/config.json > output-new.json
 	@./${OUTPUT_NAME} diff output-base.json output-new.json
+
+test-comet: clean build
+	@./${OUTPUT_NAME} parse /home/tom/dev/github/comet-events ${RESOURCES_DIR}/config.json
