@@ -42,7 +42,19 @@ func parse_args() {
 		os.Exit(1)
 	}
 
-    parse_dir(directory, config)
+    tasks, err := parse_dir(directory, config)
+    if err != nil {
+        fmt.Printf("Error parsing directory: %v\n", err)
+        os.Exit(1)
+    }
+
+    // tasks is a slice of ParsedTask structs, we want to print out this in JSON format
+    tasksJSON, err := json.MarshalIndent(tasks, "", "    ")
+    if err != nil {
+        fmt.Printf("Error marshalling tasks to JSON: %v\n", err)
+        os.Exit(1)
+    }
+    fmt.Println(string(tasksJSON))
 }
 
 func diff_args() {

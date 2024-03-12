@@ -16,7 +16,7 @@ type ParsedTask struct {
 	Line    int    `json:"line"`
 	Tag     string `json:"tag"`
 	Text    string `json:"text"`
-	Context string `json:"context"`
+    Context []string `json:"context"` // assuming context is a slice of lines
 }
 
 type DiffResult struct {
@@ -36,3 +36,4 @@ type DiffInfo struct {
 	Line int    `json:"line"`
 	File string `json:"file"`
 }
+

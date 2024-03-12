@@ -1,98 +1,139 @@
 package main
 
 import (
-    "bufio"
-    "os"
-    "path/filepath"
-    "regexp"
-    "sync"
-    "fmt"
+	"bufio"
+	"crypto/rand"
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"sync"
 )
 
 func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
-    // Convert ignore patterns to regexes
-    var ignoreRegexes []*regexp.Regexp
-    for _, pattern := range config.Ignore {
-        regex, err := regexp.Compile(pattern)
-        if err != nil {
-            return nil, err
-        }
-        ignoreRegexes = append(ignoreRegexes, regex)
-    }
+	// Convert ignore patterns to regexes
+	var ignoreRegexes []*regexp.Regexp
+	for _, pattern := range config.Ignore {
+		regex, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, err
+		}
+		ignoreRegexes = append(ignoreRegexes, regex)
+	}
 
-    var tasks []ParsedTask
-    var tasksMutex sync.Mutex // To safely append to tasks from multiple goroutines
-    var wg sync.WaitGroup
+	var tasks []ParsedTask
+	var tasksMutex sync.Mutex // To safely append to tasks from multiple goroutines
+	var wg sync.WaitGroup
 
-    // filepath.Walk to traverse directories and files
-    err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-        if err != nil {
-            return err
-        }
+	// filepath.Walk to traverse directories and files
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 
-        // Skip directories and ignored files
-        if info.IsDir() {
-            for _, regex := range ignoreRegexes {
-                if regex.MatchString(path) {
-                    return filepath.SkipDir // Skip the entire directory
-                }
-            }
-            return nil
-        }
+		// Skip directories and ignored files
+		if info.IsDir() {
+			for _, regex := range ignoreRegexes {
+				if regex.MatchString(path) {
+					return filepath.SkipDir // Skip the entire directory
+				}
+			}
+			return nil
+		}
 
-        for _, regex := range ignoreRegexes {
-            if regex.MatchString(path) {
-                return nil // Skip this file
-            }
-        }
+		for _, regex := range ignoreRegexes {
+			if regex.MatchString(path) {
+				return nil // Skip this file
+			}
+		}
 
-        // Process files in parallel
-        wg.Add(1)
-        go func() {
-            defer wg.Done()
+		// Process files in parallel
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
 
-            // Placeholder for file processing logic
-            foundTasks, err := processFile(path, config)
-            if err != nil {
-                fmt.Printf("Error processing file %s: %v\n", path, err)
-                return
-            }
+			// Placeholder for file processing logic
+			foundTasks, err := processFile(path, config.Tags)
+			if err != nil {
+				fmt.Printf("Error processing file %s: %v\n", path, err)
+				return
+			}
 
-            tasksMutex.Lock()
-            tasks = append(tasks, foundTasks...)
-            tasksMutex.Unlock()
-        }()
+			tasksMutex.Lock()
+			tasks = append(tasks, foundTasks...)
+			tasksMutex.Unlock()
+		}()
 
-        return nil
-    })
+		return nil
+	})
 
-    wg.Wait()
+	wg.Wait()
 
-    return tasks, err
+	return tasks, err
 }
 
-func processFile(filePath string, config *Config) ([]ParsedTask, error) {
-    // Implement the logic for processing a single file
-    // This would be the logic inside your `file_worker.ts`
+func processFile(filePath string, config []Tag) ([]ParsedTask, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
 
-    file, err := os.Open(filePath)
-    if err != nil {
-        return nil, err
-    }
-    defer file.Close()
-    fmt.Printf("Processing file %s\n", filePath)
+	var tasks []ParsedTask
+	scanner := bufio.NewScanner(file)
+	var lines []string // Store all lines to use for context
 
-    var tasks []ParsedTask
-    scanner := bufio.NewScanner(file)
-    lineNumber := 0
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
 
-    for scanner.Scan() {
-        lineNumber++
-        scanner.Text()
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
 
-        // Placeholder for logic to check line against config and populate tasks
+	// Iterating through each line and check against each tag's match criteria
+	for i, line := range lines {
+		for _, tagConfig := range config {
+			for _, match := range tagConfig.Match {
+				if strings.Contains(line, match) {
+					uuid, err := generateUUID()
+					if err != nil {
+						return nil, err
+					}
 
-    }
+					start := i - 3
+					if start < 0 {
+						start = 0
+					}
+					end := i + 4
+					if end > len(lines) {
+						end = len(lines)
+					}
+					context := lines[start:end]
 
-    return tasks, scanner.Err()
+					tasks = append(tasks, ParsedTask{
+						ID:      uuid,
+						File:    filePath, // Adjust if you want just the filename
+						Line:    i + 1,    // Line numbers are usually 1-indexed
+						Tag:     tagConfig.Name,
+						Text:    line,
+						Context: context,
+					})
+				}
+			}
+		}
+	}
+
+	return tasks, nil
+}
+
+/** @todo replace this with google's UUID library */
+func generateUUID() (string, error) {
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]), nil
 }
