@@ -1,12 +1,21 @@
 RESOURCES_DIR=/home/tom/dev/github/todo-tracker/resources
+OUTPUT_NAME=todo-tracker
 
 all: clean build parse
 
 clean:
-	rm -f todo-tracker
+	rm -f ${OUTPUT_NAME}
 
 build:
-	go build -o todo-tracker
+	go build -o ${OUTPUT_NAME}
 
 parse: build
-	@./todo-tracker parse ${RESOURCES_DIR}/codebase ${RESOURCES_DIR}/config.json
+	@./${OUTPUT_NAME} parse ${RESOURCES_DIR}/codebase ${RESOURCES_DIR}/config.json
+
+parse-new: build
+	@./${OUTPUT_NAME} parse ${RESOURCES_DIR}/codebase-changed ${RESOURCES_DIR}/config.json
+
+diff: build
+	@./${OUTPUT_NAME} parse ${RESOURCES_DIR}/codebase ${RESOURCES_DIR}/config.json > output-base.json
+	@./${OUTPUT_NAME} parse ${RESOURCES_DIR}/codebase-changed ${RESOURCES_DIR}/config.json > output-new.json
+	@./${OUTPUT_NAME} diff output-base.json output-new.json
