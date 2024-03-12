@@ -54,7 +54,7 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 			defer wg.Done()
 
 			// Placeholder for file processing logic
-			foundTasks, err := processFile(path, config.Tags)
+			foundTasks, err := processFile(path, config.Tags, dirPath + "/")
 			if err != nil {
 				fmt.Printf("Error processing file %s: %v\n", path, err)
 				return
@@ -73,7 +73,7 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 	return tasks, err
 }
 
-func processFile(filePath string, config []Tag) ([]ParsedTask, error) {
+func processFile(filePath string, config []Tag, dirPath string) ([]ParsedTask, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -91,6 +91,10 @@ func processFile(filePath string, config []Tag) ([]ParsedTask, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
+
+    // Remove the common prefix from the file dirPath
+    var file_name = strings.TrimPrefix(filePath, dirPath)
+
 
 	// Iterating through each line and check against each tag's match criteria
 	for i, line := range lines {
@@ -114,7 +118,7 @@ func processFile(filePath string, config []Tag) ([]ParsedTask, error) {
 
 					tasks = append(tasks, ParsedTask{
 						ID:      uuid,
-						File:    filePath, // Adjust if you want just the filename
+						File:    file_name,
 						Line:    i + 1,    // Line numbers are usually 1-indexed
 						Tag:     tagConfig.Name,
 						Text:    line,
