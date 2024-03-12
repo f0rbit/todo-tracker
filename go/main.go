@@ -65,8 +65,19 @@ func diff_args() {
 	previousJSON := flag.Arg(1)
 	newJSON := flag.Arg(2)
 
-	fmt.Printf("Previous JSON: %s\n", previousJSON)
-	fmt.Printf("New JSON: %s\n", newJSON)
+    diff, err := generate_diff(previousJSON, newJSON)
+    if err != nil {
+        fmt.Printf("Error generating diff: %v\n", err)
+        os.Exit(1)
+    }
+
+    // diff is a slice of DiffResult structs, we want to print out this in JSON format
+    diffJSON, err := json.MarshalIndent(diff, "", "    ")
+    if err != nil {
+        fmt.Printf("Error marshalling diff to JSON: %v\n", err)
+        os.Exit(1)
+    }
+    fmt.Println(string(diffJSON))
 }
 
 func read_config(filePath string) (*Config, error) {
