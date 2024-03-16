@@ -42,19 +42,19 @@ func parse_args() {
 		os.Exit(1)
 	}
 
-    tasks, err := parse_dir(directory, config)
-    if err != nil {
-        fmt.Printf("Error parsing directory: %v\n", err)
-        os.Exit(1)
-    }
+	tasks, err := parse_dir(directory, config)
+	if err != nil {
+		fmt.Printf("Error parsing directory: %v\n", err)
+		os.Exit(1)
+	}
 
-    // tasks is a slice of ParsedTask structs, we want to print out this in JSON format
-    tasksJSON, err := json.MarshalIndent(tasks, "", "    ")
-    if err != nil {
-        fmt.Printf("Error marshalling tasks to JSON: %v\n", err)
-        os.Exit(1)
-    }
-    fmt.Println(string(tasksJSON))
+	// tasks is a slice of ParsedTask structs, we want to print out this in JSON format
+	tasksJSON, err := json.MarshalIndent(tasks, "", "    ")
+	if err != nil {
+		fmt.Printf("Error marshalling tasks to JSON: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Println(string(tasksJSON))
 }
 
 func diff_args() {
@@ -65,19 +65,19 @@ func diff_args() {
 	previousJSON := flag.Arg(1)
 	newJSON := flag.Arg(2)
 
-    diff, err := generate_diff(previousJSON, newJSON)
-    if err != nil {
-        fmt.Printf("Error generating diff: %v\n", err)
-        os.Exit(1)
-    }
+	diff, err := generate_diff(previousJSON, newJSON)
+	if err != nil {
+		fmt.Printf("Error generating diff: %v\n", err)
+		os.Exit(1)
+	}
 
-    // diff is a slice of DiffResult structs, we want to print out this in JSON format
-    diffJSON, err := json.MarshalIndent(diff, "", "    ")
-    if err != nil {
-        fmt.Printf("Error marshalling diff to JSON: %v\n", err)
-        os.Exit(1)
-    }
-    fmt.Println(string(diffJSON))
+	// diff is a slice of DiffResult structs, we want to print out this in JSON format
+	diffJSON, err := json.MarshalIndent(diff, "", "    ")
+	if err != nil {
+		fmt.Printf("Error marshalling diff to JSON: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Println(string(diffJSON))
 }
 
 func read_config(filePath string) (*Config, error) {
