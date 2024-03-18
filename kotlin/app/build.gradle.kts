@@ -3,7 +3,6 @@
  *
  * This generated file contains a sample Kotlin application project to get you started.
  * For more details on building Java & JVM projects, please refer to https://docs.gradle.org/8.6/userguide/building_java_projects.html in the Gradle documentation.
- * This project uses @Incubating APIs which are subject to change.
  */
 
 plugins {
@@ -20,18 +19,16 @@ repositories {
 }
 
 dependencies {
+    // Use the Kotlin JUnit 5 integration.
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+
+    // Use the JUnit 5 integration.
+    testImplementation(libs.junit.jupiter.engine)
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     // This dependency is used by the application.
     implementation(libs.guava)
-}
-
-testing {
-    suites {
-        // Configure the built-in test suite
-        val test by getting(JvmTestSuite::class) {
-            // Use Kotlin Test test framework
-            useKotlinTest("1.9.20")
-        }
-    }
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -43,5 +40,10 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.AppKt"
+    mainClass = "dev.forbit.MainKt"
+}
+
+tasks.named<Test>("test") {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
 }
