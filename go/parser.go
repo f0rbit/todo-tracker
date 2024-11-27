@@ -126,31 +126,52 @@ func process_file(file_path string, config []Tag, dir_path string) ([]ParsedTask
 	for i, line := range lines {
 		for _, tag_config := range config {
 			for _, match := range tag_config.Match {
-				if strings.Contains(line, match) {
-					uuid, err := generate_uuid()
-					if err != nil {
-						return nil, err
-					}
-					/** @todo make the context start/end configurable in .json */
-					start := i - 4
-					if start < 0 {
-						start = 0
-					}
-					end := i + 6
-					if end > len(lines) {
-						end = len(lines)
-					}
-					context := lines[start:end]
-
-					tasks = append(tasks, ParsedTask{
-						ID:      uuid,
-						File:    file_name,
-						Line:    i + 1, // Line numbers are usually 1-indexed
-						Tag:     tag_config.Name,
-						Text:    line,
-						Context: context,
-					})
+				matched_index := strings.Index(line, match)
+				if matched_index == -1 {
+					continue
 				}
+				uuid, err := generate_uuid()
+				if err != nil {
+					return nil, err
+				}
+				/** @todo make the context start/end configurable in .json */
+				start := i - 4
+				if start < 0 {
+					start = 0
+				}
+				end := i + 6
+				if end > len(lines) {
+					end = len(lines)
+				}
+				context := lines[start:end]
+
+				// extract the text after the matched index
+				after_index := matched_index + len(match)
+				if after_index >= len(line) {
+					after_index = len(line)
+				}
+
+				// if the line is "empty" after the match, we should start from the beginning of line to include as much context
+				if len(strings.TrimSpace(line[after_index:])) < 3 {
+					after_index = 0
+				}
+
+				text := strings.TrimSpace(line[after_index:])
+
+				// if text ends with "*/" we can remove the ending
+				text = strings.TrimSuffix(text, "*/")
+
+				// then remove spaces again
+				text = strings.TrimSpace(text)
+
+				tasks = append(tasks, ParsedTask{
+					ID:      uuid,
+					File:    file_name,
+					Line:    i + 1, // Line numbers are usually 1-indexed
+					Tag:     tag_config.Name,
+					Text:    text,
+					Context: context,
+				})
 			}
 		}
 	}
