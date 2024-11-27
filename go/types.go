@@ -32,7 +32,8 @@ type DiffData struct {
 }
 
 type DiffInfo struct {
-	Text string `json:"text"`
-	Line int    `json:"line"`
-	File string `json:"file"`
+	Text    string   `json:"text"`
+	Line    int      `json:"line"`
+	File    string   `json:"file"`
+	Context []string `json:"context"`
 }

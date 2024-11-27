@@ -23,9 +23,10 @@ func read(path string) ([]ParsedTask, error) {
 
 func extractTask(task ParsedTask) *DiffInfo {
 	return &DiffInfo{
-		Text: task.Text,
-		Line: task.Line,
-		File: task.File,
+		Text:    task.Text,
+		Line:    task.Line,
+		File:    task.File,
+		Context: task.Context,
 	}
 }
 
