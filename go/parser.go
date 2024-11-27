@@ -131,12 +131,12 @@ func process_file(file_path string, config []Tag, dir_path string) ([]ParsedTask
 					if err != nil {
 						return nil, err
 					}
-
-					start := i - 3
+					/** @todo make the context start/end configurable in .json */
+					start := i - 4
 					if start < 0 {
 						start = 0
 					}
-					end := i + 4
+					end := i + 6
 					if end > len(lines) {
 						end = len(lines)
 					}
