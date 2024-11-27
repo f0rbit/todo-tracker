@@ -11,23 +11,23 @@ import (
 	"sync"
 )
 
-func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
+func parse_dir(dir_path string, config *Config) ([]ParsedTask, error) {
 	// Convert ignore patterns to regexes
-	var ignoreRegexes []*regexp.Regexp
+	var ignore_regexes []*regexp.Regexp
 	for _, pattern := range config.Ignore {
 		regex, err := regexp.Compile(pattern)
 		if err != nil {
 			return nil, err
 		}
-		ignoreRegexes = append(ignoreRegexes, regex)
+		ignore_regexes = append(ignore_regexes, regex)
 	}
 
 	var tasks []ParsedTask
-	var tasksMutex sync.Mutex // To safely append to tasks from multiple goroutines
+	var tasks_mutex sync.Mutex // To safely append to tasks from multiple goroutines
 	var wg sync.WaitGroup
 
 	// filepath.Walk to traverse directories and files
-	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir_path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error walking the path %q: %v\n", path, err)
 			return err
@@ -35,7 +35,7 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 
 		// Skip directories and ignored files
 		if info.IsDir() {
-			for _, regex := range ignoreRegexes {
+			for _, regex := range ignore_regexes {
 				if regex.MatchString(path) {
 					return filepath.SkipDir // Skip the entire directory
 				}
@@ -43,14 +43,14 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 			return nil
 		}
 
-		for _, regex := range ignoreRegexes {
+		for _, regex := range ignore_regexes {
 			if regex.MatchString(path) {
 				return nil // Skip this file
 			}
 		}
 
 		// Skip binary files
-		if isBinaryFile(path) {
+		if is_binary_file(path) {
 			return nil // Skip this file
 		}
 
@@ -60,15 +60,15 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 			defer wg.Done()
 
 			// Placeholder for file processing logic
-			foundTasks, err := processFile(path, config.Tags, dirPath+"/")
+			found_tasks, err := process_file(path, config.Tags, dir_path+"/")
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error processing file %s: %v\n", path, err)
 				return
 			}
 
-			tasksMutex.Lock()
-			tasks = append(tasks, foundTasks...)
-			tasksMutex.Unlock()
+			tasks_mutex.Lock()
+			tasks = append(tasks, found_tasks...)
+			tasks_mutex.Unlock()
 		}()
 
 		return nil
@@ -79,7 +79,7 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 	return tasks, err
 }
 
-func isBinaryFile(path string) bool {
+func is_binary_file(path string) bool {
 	file, err := os.Open(path)
 	if err != nil {
 		return false
@@ -100,8 +100,8 @@ func isBinaryFile(path string) bool {
 	return false
 }
 
-func processFile(filePath string, config []Tag, dirPath string) ([]ParsedTask, error) {
-	file, err := os.Open(filePath)
+func process_file(file_path string, config []Tag, dir_path string) ([]ParsedTask, error) {
+	file, err := os.Open(file_path)
 	if err != nil {
 		return nil, err
 	}
@@ -119,15 +119,15 @@ func processFile(filePath string, config []Tag, dirPath string) ([]ParsedTask, e
 		return nil, err
 	}
 
-	// Remove the common prefix from the file dirPath
-	var file_name = strings.TrimPrefix(filePath, dirPath)
+	// Remove the common prefix from the file dir_path
+	var file_name = strings.TrimPrefix(file_path, dir_path)
 
 	// Iterating through each line and check against each tag's match criteria
 	for i, line := range lines {
-		for _, tagConfig := range config {
-			for _, match := range tagConfig.Match {
+		for _, tag_config := range config {
+			for _, match := range tag_config.Match {
 				if strings.Contains(line, match) {
-					uuid, err := generateUUID()
+					uuid, err := generate_uuid()
 					if err != nil {
 						return nil, err
 					}
@@ -146,7 +146,7 @@ func processFile(filePath string, config []Tag, dirPath string) ([]ParsedTask, e
 						ID:      uuid,
 						File:    file_name,
 						Line:    i + 1, // Line numbers are usually 1-indexed
-						Tag:     tagConfig.Name,
+						Tag:     tag_config.Name,
 						Text:    line,
 						Context: context,
 					})
@@ -159,7 +159,7 @@ func processFile(filePath string, config []Tag, dirPath string) ([]ParsedTask, e
 }
 
 /** @todo replace this with google's UUID library */
-func generateUUID() (string, error) {
+func generate_uuid() (string, error) {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
 	if err != nil {
