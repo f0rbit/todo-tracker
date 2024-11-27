@@ -29,6 +29,7 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 	// filepath.Walk to traverse directories and files
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error walking the path %q: %v\n", path, err)
 			return err
 		}
 
@@ -48,6 +49,11 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 			}
 		}
 
+		// Skip binary files
+		if isBinaryFile(path) {
+			return nil // Skip this file
+		}
+
 		// Process files in parallel
 		wg.Add(1)
 		go func() {
@@ -56,7 +62,7 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 			// Placeholder for file processing logic
 			foundTasks, err := processFile(path, config.Tags, dirPath+"/")
 			if err != nil {
-				fmt.Printf("Error processing file %s: %v\n", path, err)
+				fmt.Fprintf(os.Stderr, "Error processing file %s: %v\n", path, err)
 				return
 			}
 
@@ -71,6 +77,27 @@ func parse_dir(dirPath string, config *Config) ([]ParsedTask, error) {
 	wg.Wait()
 
 	return tasks, err
+}
+
+func isBinaryFile(path string) bool {
+	file, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	buf := make([]byte, 512)
+	_, err = file.Read(buf)
+	if err != nil {
+		return false
+	}
+
+	for _, b := range buf {
+		if b == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func processFile(filePath string, config []Tag, dirPath string) ([]ParsedTask, error) {
