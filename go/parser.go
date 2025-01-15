@@ -126,6 +126,9 @@ func process_file(file_path string, config []Tag, dir_path string) ([]ParsedTask
 	for i, line := range lines {
 		for _, tag_config := range config {
 			for _, match := range tag_config.Match {
+				if match == "" {
+					continue
+				}
 				matched_index := strings.Index(line, match)
 				if matched_index == -1 {
 					continue
