@@ -50,7 +50,12 @@ func parse_dir(dir_path string, config *Config) ([]ParsedTask, error) {
 		}
 
 		// Skip binary files
-		if is_binary_file(path) {
+		is_binary, err := is_binary_file(path)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error checking if file %s is binary: %v\n", path, err)
+			return nil
+		}
+		if is_binary {
 			return nil // Skip this file
 		}
 
@@ -79,25 +84,34 @@ func parse_dir(dir_path string, config *Config) ([]ParsedTask, error) {
 	return tasks, err
 }
 
-func is_binary_file(path string) bool {
+func is_binary_file(path string) (bool, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return false
+		return false, err
 	}
 	defer file.Close()
 
-	buf := make([]byte, 512)
-	_, err = file.Read(buf)
-	if err != nil {
-		return false
+	// Read a small chunk from the file (e.g., 1024 bytes).
+	buf := make([]byte, 1024)
+	n, err := file.Read(buf)
+	if err != nil && err.Error() != "EOF" {
+		// If EOF is reached with fewer bytes, that's not really an error,
+		// but if something else happened, handle it.
+		return false, err
 	}
 
+	// Only check the bytes we actually read.
+	buf = buf[:n]
+
+	// Simple heuristic: if we see a NULL byte, we consider it binary.
 	for _, b := range buf {
-		if b == 0 {
-			return true
+		if b == 0x00 {
+			return true, nil
 		}
 	}
-	return false
+
+	// No NULL byte found, likely a text file.
+	return false, nil
 }
 
 func process_file(file_path string, config []Tag, dir_path string) ([]ParsedTask, error) {
