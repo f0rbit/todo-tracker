@@ -1,12 +1,9 @@
 import fs from 'node:fs';
-import { DiffResult, ParsedTask, TASK_FILE } from './schema';
 
 // Function to read and parse a JSON file
-function read(path: string) {
-    const data = fs.readFileSync(path, 'utf8');
-    const result = TASK_FILE.safeParse(JSON.parse(data));
-    if (!result.success) throw new Error('Invalid JSON');
-    return result.data;
+function read(filePath) {
+    const data = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(data);
 }
 
 
@@ -15,20 +12,23 @@ function read(path: string) {
 const base_tasks = read('./output-base.json');
 const new_tasks = read('./output-new.json');
 
-const diffs: DiffResult[] = [];
+/** @typedef {{ tag: string, type: "NEW" | "UPDATE" | "MOVE" | "DELETE", data: { old: { text: string, line: number, file: string }, new: { text: string, line: number, file: string } }}} DiffResult */
 
-const extract_task = (task: ParsedTask) => {
+/** @type {DiffResult[]} */
+const diffs = [];
+
+const extract_task = (task) => {
     const { text, line, file } = task;
     return { text, line, file };
 }
 
-const same_text = (task1: ParsedTask, task2: ParsedTask) => {
+const same_text = (task1, task2) => {
     // return true if the tasks have the same text
     return task1.text.trim() === task2.text.trim();
 }
 
 // process the tasks
-new_tasks.forEach((new_task: ParsedTask) => {
+new_tasks.forEach(new_task => {
     // first we want to check if we can find a task in the base tasks that has the same text but different line number or file
     const same_text_result = base_tasks.find(bt => same_text(bt, new_task));
     if (same_text_result) {
