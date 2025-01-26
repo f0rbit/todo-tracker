@@ -1,4 +1,4 @@
-RESOURCES_DIR=/Users/tom/dev/todo-tracker/resources
+RESOURCES_DIR=./resources
 OUTPUT_NAME=todo-tracker
 
 all: clean build parse
