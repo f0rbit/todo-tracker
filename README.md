@@ -65,4 +65,52 @@ type DiffInfo = {
 ```
 
 ## Configuration
+The configuration file is a JSON file that specifies the tags to look for and the files or directories to ignore.
 
+### Example Configuration
+```jsonc
+{
+    "tags": [
+        {
+            "name": "todo",
+            "match": [
+                "@todo",
+                "TODO:"
+            ]
+        },
+        {
+            "name": "bug",
+            "match": [
+                "@bug",
+                "BUG:"
+            ]
+        },
+        {
+            "name": "note",
+            "match": [
+                "@note",
+                "NOTE:"
+            ]
+        }
+    ],
+    "ignore": [
+        "node_modules",
+		"readme.md"
+    ]
+}
+```
+> [resources/config.json](resources/config.json)
+
+
+### Configuration Schema
+```typescript
+type Config = {
+    tags: Tag[];
+    ignore?: string[];
+};
+
+type Tag = {
+    name: string;
+    match: string[];
+};
+```
