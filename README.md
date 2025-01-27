@@ -3,33 +3,35 @@
 
 ## Building
 To build the application, run `make build` or:
-```sh
+```bash
 go build -o todo-tracker
 ```
 
 ## Usage
 ### Arguments
-- `parse <directory> <config.json>`: Traverse the directory and identify tasks based on the configuration.
-- `diff <previous_json> <new_json>`: Compare two JSON outputs and produce a diff.
+- `parse <directory> <config.json>`: Traverse the directory and identify tasks based on the configuration => `ParsedTask[]`
+- `diff <previous_json> <new_json>`: Compare two JSON outputs and produce a diff => `DiffResult[]`
 
 ### Examples
-#### Parsing a directory
-```sh
+Parsing a directory
+```bash
 ./todo-tracker parse ./resources/codebase ./resources/config.json
 ```
 
-#### Parsing a changed directory
-```sh
+Parsing a changed directory
+```bash
 ./todo-tracker parse ./resources/codebase-changed ./resources/config.json
 ```
 
-#### Generating a diff
-```sh
+Generating a diff
+```bash
 ./todo-tracker diff output-base.json output-new.json
 ```
 
+### Testing
+The `make diff` command will run through an example parse of `resources/codebase` and `resources/codebase-changed` and generate an example diff.
+
 ## Outputs
-### ParsedTask
 ```typescript
 type ParsedTask = {
     id: string;
@@ -39,10 +41,7 @@ type ParsedTask = {
     text: string;
     context: string[];
 };
-```
 
-### DiffResult
-```typescript
 type DiffResult = {
     id: string;
     tag: string;
@@ -52,10 +51,7 @@ type DiffResult = {
         new: DiffInfo | null;
     };
 };
-```
 
-### DiffInfo
-```typescript
 type DiffInfo = {
     text: string;
     line: number;
