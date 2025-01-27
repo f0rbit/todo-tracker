@@ -1,29 +1,68 @@
-## Implementation
-Arguments: `tracker <directory> <config.json> <existing_data.json>`
-Program should traverse the directory using multi-threaded technologies and build a list of all detected 'tasks'. The task identification would be based on the specified `config.json`. For example user could specify multiple different tags for tasks like `todo: '@todo', 'TODO:'` and `bug: '@bug', 'BUG:'`.
-It would then compare the produced list of tasks found with an existing data set and produce a diff of the two datasets with intelligent handling. There are 3 main cases to consider
-- Line changes of tasks
-- If line is same but text has changed of the task
-- If existing task was moved to a different file but kept same text
+## Overview
+`todo-tracker` is a tool to traverse a directory, identify tasks based on specified tags, and compare the tasks found with an existing dataset to produce a diff. It is implemented in Go for efficient **multi-threaded traversal**.
 
-## Languages
-In order to develop my own understanding and demonstrate knowledge of various programs, I plan to implement the same program in various different languages. I will blog my experiences with each language and the pros and cons of each language compared to the others, and then at the end I will have broad understanding of the strengths of each language.
-### Initial Build
-- Bun (JavaScript, for rapid and agile development & prototyping)
-- Bun (TypeScript, to get a sense of the types and structure of program)
-### Language Development
-- Go (make use of GoRoutines for multi-threaded traversal)
-- Kotlin (new language)
-- C++ (refresh skills in a popular language)
-- Rust (in-depth understanding of the language)
-### Experimental / Optional Languages
-- OCaml
-- Elixir
-- Common Lisp / Clojure
+## Building
+To build the application, run `make build` or:
+```sh
+go build -o todo-tracker
+```
 
-## Roadmap
-This project will be a pivotal part in my devpad rescope and will be integrated in that project as soon as there is a working project. The roadmap for the first build is
-1. Traverse Directory (using multi-threaded capabilities)
-2. Load config from .json file
-3. Produce a .json output of the codebase's tasks
-4. Parse existing output for a diff
+## Usage
+### Arguments
+- `parse <directory> <config.json>`: Traverse the directory and identify tasks based on the configuration.
+- `diff <previous_json> <new_json>`: Compare two JSON outputs and produce a diff.
+
+### Examples
+#### Parsing a directory
+```sh
+./todo-tracker parse ./resources/codebase ./resources/config.json
+```
+
+#### Parsing a changed directory
+```sh
+./todo-tracker parse ./resources/codebase-changed ./resources/config.json
+```
+
+#### Generating a diff
+```sh
+./todo-tracker diff output-base.json output-new.json
+```
+
+## Outputs
+### ParsedTask
+```typescript
+type ParsedTask = {
+    id: string;
+    file: string;
+    line: number;
+    tag: string;
+    text: string;
+    context: string[];
+};
+```
+
+### DiffResult
+```typescript
+type DiffResult = {
+    id: string;
+    tag: string;
+    type: "SAME" | "MOVE" | "UPDATE" | "NEW" | "DELETE";
+    data: {
+        old: DiffInfo | null;
+        new: DiffInfo | null;
+    };
+};
+```
+
+### DiffInfo
+```typescript
+type DiffInfo = {
+    text: string;
+    line: number;
+    file: string;
+    context: string[];
+};
+```
+
+## Configuration
+
